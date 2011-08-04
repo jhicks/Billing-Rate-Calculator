@@ -474,8 +474,6 @@ $(function() {
 
   // TX state payroll taxes
   calculator.taxes.add({name:'TX SUI',amount:8.25,cap:9000});
-  calculator.taxes.add({name:'TX OA',amount:1,cap:9000});
-  calculator.taxes.add({name:'TX Training',amount:0.1,cap:9000});
 
   // basic expenses
   calculator.expenses.add({name:'Medical Insurance',amount:12000});
