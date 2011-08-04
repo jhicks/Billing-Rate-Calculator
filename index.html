@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--><html class="no-js" lang="en"> <!--<![endif]-->
+  <head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <!-- Always force latest IE rendering engine (even in intranet) & Chrome Frame -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+    <title>Rate Calculator</title>
+    
+    <link rel="stylesheet" href="css/blueprint/screen.css" type="text/css" media="screen, projection"/>
+    <link rel="stylesheet" href="css/blueprint/print.css" type="text/css" media="print"/>
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="css/blueprint/ie.css" type="text/css" media="screen, projection"/>
+    <![endif]--> 
+
+    <link type="text/css" rel="stylesheet" media="all" href="css/jquery-ui.css"/>
+    <link type="text/css" rel="stylesheet" media="all" href="css/ratecalc.css"/>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/modernizr/2.0.6/modernizr.min.js"></script>
+  </head>
+  <body>
+    <section class="header container">
+      <h2>Billing Rate Calculator</h2>
+      <p>This calulator will help you determine a rate to bill your clients based on (1) how much you want to pay yourself, (2) your tax liability, and (3) any expenses you have.</p>
+      <p>This is my first backbone.js application. I am sure there are better ways to do some of the things I did.  If you would like to improve it, the code is at [[INSERT LINK TO GITHUB HERE]]</p>
+    </section>
+
+    <section id="rate_calculator" class="container">
+      <section id="pay_container">
+        <h3>Pay &amp; Hours</h3>
+        <div class="editor-label"><label for="billable_hours" title="The number of hours you plan to bill for the year.  Generally, this should be about 75% of the payable hours if you plan to pay yourself a full time wage.  Things that reduce your billable hours are time between projects, sick time, vacation, and federal/state holidays.">Billable Hours</label></div>
+        <div><input type="text" id="billable_hours"/></div>
+        <div><label for="payable_hours" title="The number of hours you will pay yourself.  There are 2080 work hours in a year">Payable Hours</label></div>
+        <div><input type="text" id="payable_hours"/></div>
+        <div><label for="pay" title="The amount you will pay yourself">Wages</label></div>
+        <div> <input type="text" id="pay"/> </div>
+        <div><label for="pay_type" title="Are wages per hour or per year">Frequency</label></div>
+        <div>
+          <select id="pay_type">
+            <option>Per Hour</option>
+            <option>Per Year</option>
+          </select>
+        </div>
+        <div><label for="margin" title="The % profit you want.">Profit Margin</label></div>
+        <div><input type="text" id="margin"/></div>
+      </section>
+
+      <hr class="space"/>
+
+      <section id="taxes_container">
+        <h3>Payroll Taxes</h3>
+        <p>Payroll taxes your company pays if you are billing corp-to-corp.  Include both federal and state taxes.  Do not include personal income taxes.  Delete these if you bill on a W2.  The defaults are for tax year 2011 and the state of Texas</p>
+        <div><a id="add_tax">Add Tax</a></div>
+        <ul id="taxes" class="span-24"></ul>
+      </section>
+
+      <hr class="space"/>
+
+      <section id="expenses_container">
+        <h3>Expenses</h3>
+        <p>Yearly expenses you may have.  Common expenses include medical insurance, equipment costs, training, etc.</p>
+        <div><a id="add_expense">Add Expense</a></div>
+        <ul id="expenses" class="span-24"></ul>
+      </section>
+
+      <hr class="space"/>
+
+      <section id="results_container">
+        <h3>Results</h3>
+        <div>Your suggested bill rate is $<span id="suggested_bill_rate">0</span> per hour</div>
+        <div>Your total tax liability is $<span id="total_tax_liability">0</span></div>
+        <div>Your total expenses are $<span id="total_expenses">0</span><div>
+      </section>
+    </section>
+
+    <!--  templates -->
+    <script type="text/template" id="expense_template">
+      <div class="span-13"><%= name %></div>
+      <div class="span-2 align-right">$<%= amount %></div>
+      <div class="span-7 align-right">$<%= hourly_amount %> per payable hour</div>
+      <div class="span-2 last actions">
+        <a class="edit" title="Edit <%= name %>">Edit</a>
+        <a class="delete" title="Delete <%= name %>">Delete</a>
+      </div>
+    </script>
+
+    <script type="text/template" id="expense_form_template">
+      <div id="add_expense_dialog" title="Add/Edit Expense">
+        <form>
+          <div><label for="name" title="The name of the expense">Name</label></div>
+          <div><input type="text" id="name" value="<%= name %>"/></div>
+          <div><label for="amount" title="The yearly amount of the expense">Yearly Amount</label></div>
+          <div><input type="text" id="amount" value="<%= amount %>"/></div>
+        </form>
+      </div>
+    </script>
+
+    <script type="text/template" id="tax_template">
+      <div class="span-9"><%= name %></div>
+      <div class="span-2 align-right"><%= amount %>%</div>
+      <div class="span-2 align-right">On First</div>
+      <div class="span-2 align-right">$<%= cap %></div>
+      <div class="span-7 align-right">$<%= hourly_tax_liability %> per payable hour</div>
+      <div class="span-2 last actions">
+        <a class="edit" title="Edit <%= name %>">Edit</a>
+        <a class="delete" title="Delete <%= name %>">Delete</a>
+      </div>
+    </script>
+
+    <script type="text/template" id="tax_form_template">
+      <div id="tax_form_dialog" title="Add/Edit Tax">
+        <form>
+          <div><label for="name" title="The name of the tax">Name</label></div>
+          <div><input type="text" id="name" value="<%= name %>"/></div>
+          <div><label for="amount" title="The amount of the tax, as a percent">Amount (%)</label></div>
+          <div><input type="text" id="amount" value="<%= amount %>"/></div>
+          <div><label for="cap" title="Some taxes only apply to the first X number of dollars">On First ($)</label></div>
+          <div><input type="text" id="cap" value="<%= cap %>"/></div>
+        </form>
+      </div>
+    </script>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js" type="text/javascript"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.14/jquery-ui.min.js" type="text/javascript"></script>
+    <script src="scripts/underscore-min.js" type="text/javascript"></script>
+    <script src="scripts/backbone-min.js" type="text/javascript"></script>
+    <script src="scripts/ratecalc.js" type="text/javascript"></script>
+  </body>
+</html>
+

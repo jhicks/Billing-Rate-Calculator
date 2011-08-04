@@ -1,0 +1,31 @@
+.hidden {
+  display: none;
+}
+
+a {
+  cursor: hand;cursor:pointer;
+}
+
+ul {
+  list-style: none;
+  padding: 0px;
+}
+
+li {
+  text-align: left;
+  margin: 0px;
+  padding: 0px;
+}
+
+li:nth-child(even) {
+  background: #e5ecf9;
+}
+
+.actions {
+  text-align: right;
+}
+
+.align-right {
+  text-align: right;
+}
+
