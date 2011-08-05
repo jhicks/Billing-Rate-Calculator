@@ -18,7 +18,7 @@ $(function() {
     defaults: {
       billable_hours: 1560,
       payable_hours: 2080,
-      pay: 130000,
+      pay: 100000,
       pay_type: "Per Year",
       margin: 10
     },
@@ -64,20 +64,8 @@ $(function() {
       }
     },
 
-    isPayPerYear: function() {
-      return this.get('pay_type') === 'Per Year';
-    },
-    
     isPayPerHour: function() {
       return this.get('pay_type') === 'Per Hour';
-    },
-
-    getHourlyPay: function() {
-      if(this.isPayPerYear()) {
-        return Number(this.get('pay')) / Number(this.get('payable_hours'));
-      }
-
-      return Number(this.get('pay'));
     },
 
     getYearlyPay: function() {
@@ -86,11 +74,6 @@ $(function() {
       }
 
       return Number(this.get('pay'));
-    },
-
-    getExpensesPerHour: function() {
-      var result = this.expenses.getTotal() / Number(this.get('payable_hours'));
-      return result;
     },
 
     getTotalExpenses: function() {
@@ -103,19 +86,6 @@ $(function() {
       return result;
     },
 
-    getTaxesPerHour: function() {
-      var result = this.getTotalTaxLiability() / Number(this.get('payable_hours'));
-      return result;
-    },
-
-    getHourlyCostOfServices: function() {
-      var payPerHour = this.getHourlyPay();
-      var expensesPerHour = this.getExpensesPerHour();
-      var taxesPerHour = this.getTaxesPerHour();
-      var hourlyCosts = payPerHour + expensesPerHour + taxesPerHour;
-      return hourlyCosts;
-    },
-
     calculate: function() {
       if(this.calculate_lock) {
         return false;
@@ -126,9 +96,8 @@ $(function() {
       this.taxes.each(function(tax) { tax.calculateHourlyTax(); });
       this.expenses.each(function(expense) { expense.calculateHourlyExpense();});
 
-      var hourlyCostOfServices = this.getHourlyCostOfServices();
-      var baseBillRate = hourlyCostOfServices * Number(this.get('payable_hours')) / Number(this.get('billable_hours'));
-      var result = baseBillRate + (baseBillRate * (Number(this.get('margin'))/100));
+      var baseBillRate = (this.getYearlyPay() + this.getTotalExpenses() + this.getTotalTaxLiability()) / Number(this.get('billable_hours'));
+      var result = baseBillRate + (baseBillRate * (Number(this.get('margin')) / 100));
       result = result.toFixed(2);
       this.set({suggested_bill_rate: result});
 
@@ -480,7 +449,7 @@ $(function() {
   calculator.expenses.add({name:'Training',amount:10000});
   calculator.expenses.add({name:'Equipment',amount:3000});
   calculator.expenses.add({name:'Licenses',amount:3000});
-  calculator.expenses.add({name:'Misc',amount:5000});
+  calculator.expenses.add({name:'Misc',amount:3000});
 
   var view = new AppView({model:calculator});
 });
