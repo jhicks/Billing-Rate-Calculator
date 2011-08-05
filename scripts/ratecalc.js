@@ -20,7 +20,7 @@ $(function() {
       payable_hours: 2080,
       pay: 100000,
       pay_type: "Per Year",
-      margin: 10
+      markup: 10
     },
     
     initialize: function() {
@@ -97,7 +97,7 @@ $(function() {
       this.expenses.each(function(expense) { expense.calculateHourlyExpense();});
 
       var baseBillRate = (this.getYearlyPay() + this.getTotalExpenses() + this.getTotalTaxLiability()) / Number(this.get('billable_hours'));
-      var result = baseBillRate + (baseBillRate * (Number(this.get('margin')) / 100));
+      var result = baseBillRate + (baseBillRate * (Number(this.get('markup')) / 100));
       result = result.toFixed(2);
       this.set({suggested_bill_rate: result});
 
@@ -384,7 +384,7 @@ $(function() {
       $('#payable_hours').val(this.model.get('payable_hours'));
       $('#pay').val(this.model.get('pay'));
       $('#pay_type').val(this.model.get('pay_type'));
-      $('#margin').val(this.model.get('margin'));
+      $('#markup').val(this.model.get('markup'));
 
       return this;
     },
